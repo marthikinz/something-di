@@ -2,10 +2,12 @@ package util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
@@ -43,12 +45,13 @@ public class CustomInjector  {
 	}
 	
 	private void initFramework(Class<?> mainClass) throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
-		Class<?>[] classes = ClassLoaderUtil.getClasses(ClassLoaderUtil.getPackage(mainClass), mainClass);
-		Reflections reflections = new Reflections(mainClass.getPackage().getName());
-		Reflections reflections2 = new Reflections(ClassLoaderUtil.getPackage(mainClass));
-		Set<Class<?>> types = reflections.getTypesAnnotatedWith(CustomComponent.class);
-		Set<Class<?>> types2 = reflections2.getTypesAnnotatedWith(CustomComponent.class);
-		types.addAll(types2);
+		Class<?>[] classes = ClassLoaderUtil.getClasses(mainClass);
+		StringTokenizer tok = ClassLoaderUtil.getPackage(mainClass);
+		Set<Class<?>> types = new HashSet<Class<?>>();
+		while (tok.hasMoreElements()) {
+			Reflections reflections = new Reflections(tok.nextToken());
+			types.addAll(reflections.getTypesAnnotatedWith(CustomComponent.class));
+		}
 		for (Class<?> implementationClass : types) {
 			Class<?>[] interfaces = implementationClass.getInterfaces();
 			if (interfaces.length == 0) {

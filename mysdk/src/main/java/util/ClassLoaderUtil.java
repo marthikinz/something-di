@@ -12,32 +12,33 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 public class ClassLoaderUtil {
-	private static List<Class<?>> getClassList(String packageName, Class<?> mainClass)
+	private static List<Class<?>> getClassList(Class<?> mainClass)
 			throws IOException, ClassNotFoundException {
+		StringTokenizer tok = getPackage(mainClass);
+
+		List<Class<?>> classes = new ArrayList<Class<?>>();
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		assert classLoader != null;
-		String path = packageName.replace('.', '/');
-		Enumeration<URL> resources = classLoader.getResources(path);
-		
-
-		List<File> dirs = new ArrayList<File>();
-		while (resources.hasMoreElements()) {
-			URL resource = (URL) resources.nextElement();
-			dirs.add(new File(resource.getFile()));
-		}
-		List<Class<?>> classes = new ArrayList<Class<?>>();
-		for (File directory : dirs) {
-			classes.addAll(findClasses(directory, packageName));
-		}
-		if (mainClass != null) {
-			classes.addAll(getClassList(mainClass.getPackage().getName(), null));
+		while (tok.hasMoreElements()) {
+			String packageName = tok.nextToken();
+			String path = packageName.replace('.', '/');
+			Enumeration<URL> resources = classLoader.getResources(path);
+			List<File> dirs = new ArrayList<File>();
+			while (resources.hasMoreElements()) {
+				URL resource = (URL) resources.nextElement();
+				dirs.add(new File(resource.getFile()));
+			}
+			for (File directory : dirs) {
+				classes.addAll(findClasses(directory, packageName));
+			}
+			
 		}
 		return classes;
 	}
 
-	public static Class<?>[] getClasses(String packageName, Class<?> mainClass)
+	public static Class<?>[] getClasses(Class<?> mainClass)
 			throws ClassNotFoundException, IOException {
-		return getClassList(packageName, mainClass).toArray(new Class[getClassList(packageName, mainClass).size()]);
+		return getClassList(mainClass).toArray(new Class[getClassList(mainClass).size()]);
 	}
 
 	public static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException {
@@ -58,7 +59,7 @@ public class ClassLoaderUtil {
 		return classes;
 	}
 	
-	public static String getPackage(Class<?> mainClass) throws IOException {
+	public static StringTokenizer getPackage(Class<?> mainClass) throws IOException {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		assert classLoader != null;
 		String path = mainClass.getPackage().getName();
@@ -70,7 +71,7 @@ public class ClassLoaderUtil {
 		InputStream is = new FileInputStream(file.getParent() + "/setting.properties");
 		Properties p = System.getProperties();
 		p.load(is);
-		return p.get("package").toString();
+		return new StringTokenizer(p.get("package").toString(),",");
 				
 		
 	}
