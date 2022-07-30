@@ -18,8 +18,8 @@ import annotation.CustomComponent;
 
 public class CustomInjector  {
 	
-	private static Map<Class<?>, Class<?>> diMap;
-	private static Map<Class<?>, Object> applicationScope;
+	private Map<Class<?>, Class<?>> diMap;
+	private Map<Class<?>, Object> applicationScope;
 	
 	private static CustomInjector injector;
 	
@@ -29,7 +29,7 @@ public class CustomInjector  {
 		applicationScope = new HashMap<Class<?>, Object>();
 	}
 	
-	public static void startApplication(Class<?> mainClass) {
+	public static CustomInjector startApplication(Class<?> mainClass) {
 		try {
 			synchronized (CustomInjector.class) {
 				if (injector == null) {
@@ -42,6 +42,7 @@ public class CustomInjector  {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		return injector;
 	}
 	
 	private void initFramework(Class<?> mainClass) throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
@@ -74,7 +75,7 @@ public class CustomInjector  {
 		}
 	}
 	
-	public static <T> T getService(Class<T> classz) {
+	public <T> T getService(Class<T> classz) {
 		try {
 			return injector.getBeanInstance(classz);
 		}
@@ -84,11 +85,11 @@ public class CustomInjector  {
 		return null;
 	}
 	
-	public static <T> T getBeanInstance(Class<T> interfaceClass) throws InstantiationException, IllegalAccessException {
+	public <T> T getBeanInstance(Class<T> interfaceClass) throws InstantiationException, IllegalAccessException {
 		return (T) getBeanInstance(interfaceClass, null, null);
 	}
 	
-	public static <T> Object getBeanInstance(Class<T> interfaceClass, String fieldName, String qualifier) throws InstantiationException, IllegalAccessException {
+	public <T> Object getBeanInstance(Class<T> interfaceClass, String fieldName, String qualifier) throws InstantiationException, IllegalAccessException {
 		Class<?> implementationClass = getImplementationClass(interfaceClass, fieldName, qualifier);
 		if (applicationScope.containsKey(implementationClass)) {
 			return applicationScope.get(implementationClass);
@@ -102,7 +103,7 @@ public class CustomInjector  {
 		
 	}
 	
-	private static Class<?> getImplementationClass(Class<?> interfaceClass, final String fieldName, final String qualifier) {
+	private Class<?> getImplementationClass(Class<?> interfaceClass, final String fieldName, final String qualifier) {
 		Set<Entry<Class<?>, Class<?>>> implementationClasses = diMap.entrySet().stream()
 				.filter(entry -> entry.getValue() == interfaceClass).collect(Collectors.toSet());
 		String errorMessage = "";
