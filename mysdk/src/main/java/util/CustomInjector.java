@@ -18,8 +18,8 @@ import annotation.CustomComponent;
 
 public class CustomInjector  {
 	
-	private Map<Class<?>, Class<?>> diMap;
-	private Map<Class<?>, Object> applicationScope;
+	private static Map<Class<?>, Class<?>> diMap;
+	private static Map<Class<?>, Object> applicationScope;
 	
 	private static CustomInjector injector;
 	
@@ -84,11 +84,11 @@ public class CustomInjector  {
 		return null;
 	}
 	
-	private <T> T getBeanInstance(Class<T> interfaceClass) throws InstantiationException, IllegalAccessException {
+	public static <T> T getBeanInstance(Class<T> interfaceClass) throws InstantiationException, IllegalAccessException {
 		return (T) getBeanInstance(interfaceClass, null, null);
 	}
 	
-	public <T> Object getBeanInstance(Class<T> interfaceClass, String fieldName, String qualifier) throws InstantiationException, IllegalAccessException {
+	public static <T> Object getBeanInstance(Class<T> interfaceClass, String fieldName, String qualifier) throws InstantiationException, IllegalAccessException {
 		Class<?> implementationClass = getImplementationClass(interfaceClass, fieldName, qualifier);
 		if (applicationScope.containsKey(implementationClass)) {
 			return applicationScope.get(implementationClass);
@@ -102,7 +102,7 @@ public class CustomInjector  {
 		
 	}
 	
-	private Class<?> getImplementationClass(Class<?> interfaceClass, final String fieldName, final String qualifier) {
+	private static Class<?> getImplementationClass(Class<?> interfaceClass, final String fieldName, final String qualifier) {
 		Set<Entry<Class<?>, Class<?>>> implementationClasses = diMap.entrySet().stream()
 				.filter(entry -> entry.getValue() == interfaceClass).collect(Collectors.toSet());
 		String errorMessage = "";
